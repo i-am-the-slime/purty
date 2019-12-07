@@ -492,7 +492,8 @@ declaration log indentation indent'' declaration' = case declaration' of
     let
       indent' = indent'' <> indentation
     debug log "DeclClass" declaration' span
-    classHead log span indentation indent'' classHead'
+    pure newline
+      <> classHead log span indentation indent'' classHead'
       <> foldMap
         (\(where'', labeleds) ->
           sourceToken log indent'' space where''
@@ -509,7 +510,8 @@ declaration log indentation indent'' declaration' = case declaration' of
     let
       indent' = indent'' <> indentation
     debug log "DeclData" declaration' span
-    dataHead log indentation indent'' dataHead'
+    pure newline
+      <> dataHead log indentation indent'' dataHead'
       <> foldMap
         (\(equals, dataCtors) ->
           pure (newline <> indent')
@@ -533,24 +535,27 @@ declaration log indentation indent'' declaration' = case declaration' of
       <> pure newline
   Language.PureScript.CST.DeclFixity span fixityFields' -> do
     debug log "DeclFixity" declaration' span
-    fixityFields log indent'' fixityFields'
+    pure newline
+      <> fixityFields log indent'' fixityFields'
       <> pure newline
   Language.PureScript.CST.DeclForeign span foreign'' import'' foreign''' -> do
     debug log "DeclForeign" declaration' span
-    sourceToken log indent'' blank foreign''
+    pure newline
+      <> sourceToken log indent'' blank foreign''
       <> sourceToken log indent'' space import''
       <> pure space
       <> foreign' log span indentation indent'' foreign'''
       <> pure newline
   Language.PureScript.CST.DeclInstanceChain span instances -> do
     debug log "DeclInstanceChain" declaration' span
-    separated
-      log
-      (Span.separated SourceRange.instance' instances)
-      indent''
-      space
-      (instance' log indentation indent'')
-      instances
+    pure newline
+      <> separated
+           log
+           (Span.separated SourceRange.instance' instances)
+           indent''
+           space
+           (instance' log indentation indent'')
+           instances
       <> pure newline
   Language.PureScript.CST.DeclNewtype span dataHead' equals name' type'' -> do
     let
@@ -567,7 +572,8 @@ declaration log indentation indent'' declaration' = case declaration' of
         Span.SingleLine ->
           space
     debug log "DeclNewtype" declaration' span
-    dataHead log indentation indent'' dataHead'
+    pure newline
+      <> dataHead log indentation indent'' dataHead'
       <> pure (newline <> indent')
       <> sourceToken log indent' blank equals
       <> pure space
@@ -577,14 +583,16 @@ declaration log indentation indent'' declaration' = case declaration' of
       <> pure newline
   Language.PureScript.CST.DeclSignature span labeled' -> do
     debug log "DeclSignature" declaration' span
-    labeledNameType log indentation indent'' labeled'
+    pure newline
+      <> labeledNameType log indentation indent'' labeled'
   Language.PureScript.CST.DeclType span dataHead' equals type'' -> do
     let
       indent' = indent'' <> indentation
 
       indent = indent' <> indentation
     debug log "DeclType" declaration' span
-    dataHead log indentation indent'' dataHead'
+    pure newline
+      <> dataHead log indentation indent'' dataHead'
       <> pure (newline <> indent')
       <> sourceToken log indent' blank equals
       <> pure space
@@ -592,7 +600,8 @@ declaration log indentation indent'' declaration' = case declaration' of
       <> pure newline
   Language.PureScript.CST.DeclValue span valueBindingFields' -> do
     debug log "DeclValue" declaration' span
-    valueBindingFields log indentation indent'' valueBindingFields'
+    pure newline
+      <> valueBindingFields log indentation indent'' valueBindingFields'
       <> pure newline
 
 declarations ::
@@ -610,8 +619,7 @@ declarations log indentation declarations' = case declarations' of
     debug log "declarations" declarations' Span.MultipleLines
     foldMap
       (\declaration' ->
-        pure newline
-          <> declaration log indentation indent declaration'
+          declaration log indentation indent declaration'
       )
       declarations'
 
@@ -693,7 +701,7 @@ doStatement log indentation indent' doStatement' = case doStatement' of
     debug log "DoLet" doStatement' (Span.doStatement doStatement')
     sourceToken log indent' blank let'
       <> foldMap
-        (letBinding log indentation indent (newline <> indent) newline)
+        (letBinding log indentation indent (newline <> indent) blank)
         (Data.List.NonEmpty.init letBindings)
       <> letBinding
         log
@@ -1532,7 +1540,7 @@ letIn log span indentation indent' letIn' = case letIn' of
     debug log "LetIn" letIn' span
     sourceToken log indent' blank let'
       <> foldMap
-        (letBinding log indentation indent prefix newline)
+        (letBinding log indentation indent prefix blank)
         (Data.List.NonEmpty.init letBindings)
       <> letBinding
         log
