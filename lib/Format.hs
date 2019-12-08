@@ -618,9 +618,7 @@ declarations log indentation declarations' = case declarations' of
       indent = blank
     debug log "declarations" declarations' Span.MultipleLines
     foldMap
-      (\declaration' ->
-          declaration log indentation indent declaration'
-      )
+      ( declaration log indentation indent )
       declarations'
 
 delimited ::
