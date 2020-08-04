@@ -41,6 +41,10 @@ x = X
 y ∷ Y -> Y -> Y
 y _ _ = Y
 
+z = case _ of
+  -- iAmCommentedOut -> "Bye"
+  iAmStillHere -> "Hi!"
+
 -- Some commented code at the end of the file
 -- z :: 25
 -- z = 12

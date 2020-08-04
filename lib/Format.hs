@@ -351,10 +351,10 @@ commentLeadingWhitespacePreserving log indent prefix comment'' = case comment'' 
     pure (display comment')
   CST.Line _ -> do
     Log.debug log "Not formatting `Line`"
-    pure newline
+    pure (newline <> indent)
   CST.Space _ -> do
     Log.debug log "Not formatting `Space`"
-    pure space
+    pure blank
 
 commentTrailing ::
   (Show a) =>
@@ -387,23 +387,25 @@ commentsLeading log indent prefix commentsLeading' = case commentsLeading' of
   _ -> 
     if List.any isComment commentsLeading' && List.length (List.filter isComment commentsLeading') > 1
       then do
-        debugHarder log "leading comments" commentsLeading'' Span.MultipleLines
-        foldMap 
-          (commentLeadingWhitespacePreserving log indent prefix) 
-          commentsLeading''
+        debug log "leading comments preserving whitespace" commentsLeading'' Span.MultipleLines
+        foldMap (commentLeadingWhitespacePreserving log indent prefix) commentsLeading''
       else do
-        debugHarder log "leading comments" commentsLeading' Span.MultipleLines
+        debugHarder log "change leading comments" commentsLeading' Span.MultipleLines
         foldMap (commentLeading log indent prefix) commentsLeading'
   where
-    lines :: [[ CST.Comment CST.LineFeed ]]
-    lines = List.Split.splitWhen isLine commentsLeading' 
+    sanitised =
+      List.dropWhileEnd isSpace . List.dropWhile (not . isComment) $ commentsLeading'
     commentsLeading'' = 
-      (List.dropWhileEnd isSpace) . (List.dropWhile (not . isComment)) $ commentsLeading'
+      if hasNewlineBeforeComment 
+        then (CST.Line CST.LF) : sanitised 
+        else sanitised
+    hasNewlineBeforeComment = 
+      List.any isNewline . List.takeWhile (not . isComment) $ sanitised
     isComment x = case x of
       CST.Comment _  -> True
       CST.Line _ -> False
       CST.Space _ -> False
-    isLine x = case x of
+    isNewline x = case x of
       CST.Comment _  -> False
       CST.Line _ -> True
       CST.Space _ -> False
