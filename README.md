@@ -7,7 +7,7 @@ Very opinionated fork of [Purty](https://gitlab.com/joneshf/purty). A source cod
 ### Sources
 
 ```
-git clone https://github.com/Zelenya/purty.git
+git clone git@github.com:Zelenya/purty.git
 cd purty
 ```
 
